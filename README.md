@@ -159,4 +159,4 @@ if __name__ == "__main__":
 - ساختار مدرن asyncio و مدیریت آسان کامندها
 
 
-> طراحی شده توسط Ali-jafari و کمک گرفته شده از GPT
+> طراحی شده توسط Ali-jafari و کمک گرفته شده از ChatGPT & Github Copilot
