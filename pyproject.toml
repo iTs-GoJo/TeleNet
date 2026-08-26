@@ -4,9 +4,12 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "telenet"
-version = "0.2.0"
+version = "3.0.0"
 authors = [{ name = "Ali Jafari", email = "thealiapi@gmail.com" }]
 description = "TeleNet: Async Telegram Bot API framework"
 readme = "README.md"
 requires-python = ">=3.9"
 dependencies = ["aiohttp>=3.9"]
+
+[project.optional-dependencies]
+dev = ["pytest>=7.0", "pytest-asyncio>=0.21"]
