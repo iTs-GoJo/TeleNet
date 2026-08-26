@@ -1,57 +1,45 @@
 # TeleNet
 
-
-تل‌نت یک کتابخانه مدرن و قدرتمند پایتون برای ساخت ربات‌های چت و مدیریت دستورهاست، با قابلیت Long Polling و طراحی ساده اما منعطف. با تل‌نت می‌توانی ربات‌های پیچیده با پیام فارسی، دکمه کی‌برد، هندلینگ پیشرفته و مدیریت کامل کامندها بسازی، بدون دردسر و با کمترین کدنویسی.
-
-
----
+TeleNet یک کتابخانه مدرن و قدرتمند Python برای ساخت ربات‌های تلگرام با asyncio است. با TeleNet می‌توانید ربات‌های پیچیده با پیام فارسی، دکمه‌های اینلاین، هندلینگ پیشرفته و مدیریت کامل کامندها بسازید.
 
 ## 🔹 ویژگی‌ها
 
 - طراحی مدرن و سبک با asyncio
-
 - پشتیبانی کامل از پیام‌های فارسی و Unicode
-
 - سیستم Router & Command برای مدیریت کامندها
-
-- امکان ساخت هندلرهای چندگانه برای دستورهای مختلف
-
-- Long Polling ساده برای دریافت آپدیت‌ها
-
-- کاملاً آماده برای گسترش و ماژولار شدن
-
-- مناسب برای ربات‌های شخصی و عمومی
-
-
-
----
+- پشتیبانی از Middleware
+- Long Polling و Webhook
+- Rate Limiting و Retry خودکار
+- پشتیبانی از دکمه‌های Inline و Reply Keyboard
+- کاملاً ماژولار و قابل گسترش
 
 ## 🔹 نصب
-```bash
 
+```bash
 pip install telenet
 ```
 
-- > تل‌نت نیاز به پایتون 3.10+ دارد.
+نصب به صورت محلی (توسعه):
 
-
-
-
----
+```bash
+git clone https://github.com/yourusername/telenet.git
+cd telenet
+pip install -e .
+```
 
 🔹 شروع سریع
+
 ```python
 import asyncio
 from telenet import TeleNetClient, Router, Command
 
-TOKEN = "<YOUR_BOT_TOKEN>"
-
-router = Router()
+TOKEN = "YOUR_BOT_TOKEN"
 bot = TeleNetClient(TOKEN)
+router = Router()
 
 @router.on(Command("start"))
-async def start_handler(msg):
-    await bot.send_message(msg.chat.id, "سلام")  # پیام فارسی
+async def start(ctx):
+    await bot.send_message(ctx.chat.id, "سلام! خوش اومدی 😎")
 
 async def main():
     await bot.start()
@@ -61,102 +49,58 @@ if __name__ == "__main__":
     asyncio.run(main())
 ```
 
-
----
-
-🔹 هندلرهای پیشرفته
+🔹 استفاده از دکمه‌های اینلاین
 
 ```python
-from telenet import InlineButton
-
-@router.on(Command("menu"))
-async def menu_handler(msg):
-    keyboard = [
-        [InlineButton("گزینه 1", callback_data="opt1")],
-        [InlineButton("گزینه 2", callback_data="opt2")]
-    ]
-    await bot.send_message(msg.chat.id, "منوی اصلی:", reply_markup=keyboard)
-
-@router.on("callback_query")
-async def callback_handler(query):
-    await bot.answer_callback(query.id, f"شما {query.data} را انتخاب کردید")
-```
-
-
----
-
-## 🔹 ویژگی‌های پیشرفته
-
-- کامند داینامیک: می‌توانی دستورها را در زمان اجرا اضافه یا حذف کنی.
-
-- پشتیبانی از چندین Router: مدیریت پیچیده مسیرها و گروه‌های کامندها.
-
-- سازگار با انواع آپدیت‌ها: پیام، عکس، فایل، استیکر و دکمه‌ها.
-
-- ماژولار و قابل گسترش: افزودن Middleware و Hookهای اختصاصی آسان است.
-
-
-
----
-
-## 🔹 نکات مهم
-
-- ذخیره فایل‌ها با UTF-8 برای پیام‌های فارسی
-
-- اجرای asyncio.run(main()) تنها یکبار در برنامه
-
-- هندلرها باید async باشند
-
-- برای پاسخ سریع‌تر، می‌توان از task‌های جداگانه استفاده کرد
-
-
-
----
-
-🔹 مثال کامل ربات
-
-```python
-import asyncio
 from telenet import TeleNetClient, Router, Command, InlineButton
 
-TOKEN = "<YOUR_BOT_TOKEN>"
-bot = TeleNetClient(TOKEN)
-router = Router()
-
 @router.on(Command("start"))
-async def start(msg):
-    await bot.send_message(msg.chat.id, "به TeleNet خوش آمدید!")
+async def start(ctx):
+    await bot.send_message(
+        ctx.chat.id,
+        "یکی از گزینه‌ها را انتخاب کنید:",
+        buttons=[
+            [InlineButton("رفتن به گوگل", url="https://google.com")],
+            [InlineButton("گزینه ۱", callback_data="opt1")]
+        ]
+    )
+```
 
-@router.on(Command("menu"))
-async def menu(msg):
-    kb = [[InlineButton("گزینه A", "A")], [InlineButton("گزینه B", "B")]]
-    await bot.send_message(msg.chat.id, "منوی اصلی:", reply_markup=kb)
+🔹 Middleware
 
-@router.on("callback_query")
-async def cb(q):
-    await bot.answer_callback(q.id, f"شما {q.data} را انتخاب کردید")
+```python
+from telenet.middleware import middleware
+
+@middleware
+async def logging_middleware(obj, next):
+    print(f"📩 دریافت: {obj}")
+    await next()
+    print("✅ پردازش شد")
+
+router.add_middleware(logging_middleware)
+```
+
+🔹 Webhook
+
+```python
+from telenet.webhook import WebhookServer
 
 async def main():
     await bot.start()
-    await bot.poll_updates(router=router)
-
-if __name__ == "__main__":
-    asyncio.run(main())
+    server = WebhookServer(bot, router, path="/webhook", port=8443)
+    await server.start()
+    await asyncio.Event().wait()
 ```
 
+🔹 نیازمندی‌ها
+
+· Python 3.9+
+· aiohttp>=3.9
+
+🔹 لایسنس
+
+MIT License
 
 ---
 
-
-🔹 چرا TeleNet؟
-
-- ساده و سریع
-
-- قابل گسترش و ماژولار
-
-- مناسب برای ربات‌های حرفه‌ای و پروژه‌های بزرگ
-
-- ساختار مدرن asyncio و مدیریت آسان کامندها
-
-
-> طراحی شده توسط Ali-jafari و کمک گرفته شده از ChatGPT & Github Copilot
+Designed by Ali-Jafari & GPT | With ❤
